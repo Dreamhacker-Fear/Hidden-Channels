@@ -1,1 +1,1 @@
-(function(e,d,r){"use strict";var n={onLoad(){const t=d.metro.findByName("GuildsBar");r.logger.log(t?"Hidden Servers: GuildsBar FOUND":"Hidden Servers: GuildsBar NOT FOUND")},onUnload(){}};return e.default=n,Object.defineProperty(e,"__esModule",{value:!0}),e})({},vendetta.metro.common,vendetta);
+(function(e,r){"use strict";var d={onLoad(){r.logger.log("Hidden Servers: TEST LOADED")},onUnload(){r.logger.log("Hidden Servers: TEST UNLOADED")}};return e.default=d,Object.defineProperty(e,"__esModule",{value:!0}),e})({},vendetta);
