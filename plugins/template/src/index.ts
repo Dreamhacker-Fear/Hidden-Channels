@@ -1,40 +1,74 @@
 import { React } from "@vendetta/metro/common";
 import { storage } from "@vendetta/plugin";
-import { after } from "@vendetta/patcher";
+import { findByProps } from "@vendetta/metro/common";
+import { Forms } from "@vendetta/ui/components";
 
-let unpatch: (() => void) | undefined;
+let patch: (() => void) | null = null;
+
+const PANEL_WIDTH = 90;
+const SWIPE_DISTANCE = 70;
+
+function HiddenServerPanel() {
+    const [open, setOpen] = React.useState(
+        storage.hiddenBarOpen ?? false
+    );
+
+    React.useEffect(() => {
+        storage.hiddenBarOpen = open;
+    }, [open]);
+
+    return React.createElement(
+        "View",
+        {
+            style: {
+                position: "absolute",
+                left: open ? 0 : -PANEL_WIDTH,
+                top: 0,
+                bottom: 0,
+                width: PANEL_WIDTH,
+                zIndex: 9999,
+                backgroundColor: "#111214",
+            },
+            onTouchStart: (event: any) => {
+                storage.swipeStartX =
+                    event?.nativeEvent?.pageX ?? 0;
+            },
+            onTouchEnd: (event: any) => {
+                const start = storage.swipeStartX ?? 0;
+                const end =
+                    event?.nativeEvent?.pageX ?? start;
+
+                const distance = end - start;
+
+                if (distance > SWIPE_DISTANCE) {
+                    setOpen(false);
+                }
+
+                if (distance < -SWIPE_DISTANCE) {
+                    setOpen(true);
+                }
+            },
+        }
+    );
+}
 
 export default {
     onLoad() {
-        const GestureHandler = window.modules.findByProps?.("PanGestureHandler");
+        storage.hiddenBarOpen =
+            storage.hiddenBarOpen ?? false;
 
-        if (!GestureHandler) return;
-
-        unpatch = after("PanGestureHandler", GestureHandler, (args, res) => {
-            const props = args[0];
-            if (!props) return;
-
-            const oldGesture = props.onEnded;
-
-            props.onEnded = (e: any) => {
-                const x = e?.translationX ?? 0;
-
-                // Swipe LEFT
-                if (x < -80) {
-                    storage.hiddenBarOpen = true;
-                }
-
-                // Swipe RIGHT
-                if (x > 80) {
-                    storage.hiddenBarOpen = false;
-                }
-
-                oldGesture?.(e);
-            };
-        });
+        console.log(
+            "Hidden Servers: swipe system loaded"
+        );
     },
 
     onUnload() {
-        unpatch?.();
-    }
+        storage.hiddenBarOpen = false;
+    },
+
+    settings: () => (
+        <Forms.FormText>
+            Hidden Servers
+        </Forms.FormText>
+    ),
 };
